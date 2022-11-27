@@ -19,5 +19,9 @@ public:
 private:
     Ui::MainWindow *ui;
     PlotArea *area;
+    QString segmentsPath = "/home/kasinski_nikita/Documents/segments.txt";
+    QString polygonPath = "/home/kasinski_nikita/Documents/poly.txt";
+    void ReadSegments();
+    void ReadPoly();
 };
 #endif // MAINWINDOW_H

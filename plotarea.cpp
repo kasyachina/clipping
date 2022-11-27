@@ -144,6 +144,11 @@ void PlotArea::drawArrows(QPainter& p)
     p.drawPath(py);
     p.drawText(QRect{zx + u / 2, u / 2, u, u}, "Y");
 }
+void PlotArea::drawClippingWindow(QPainter& p)
+{
+    p.setPen(clippingWindowColor);
+    p.drawRect(QRect{Adjust(clippingWindowp1), Adjust(clippingWindowp2)});
+}
 void PlotArea::drawLineSegments(QPainter& p)
 {
     if (segments.empty())
@@ -190,6 +195,11 @@ void PlotArea::SetPolygonFillingColor(const QColor& color)
 {
     polygonFillingColor = color;
 }
+void PlotArea::SetClippingWindow(const QPoint& p1, const QPoint& p2)
+{
+    clippingWindowp1 = p1;
+    clippingWindowp2 = p2;
+}
 void PlotArea::ChangeMode(PlotMode newMode)
 {
     mode = newMode;
@@ -214,9 +224,13 @@ void PlotArea::paintEvent(QPaintEvent*)
     {
         case PlotMode::Segments:
             drawLineSegments(pt);
+            drawClippingWindow(pt);
             break;
         case PlotMode::Polygons:
             drawPolygon(pt);
+            drawClippingWindow(pt);
+            break;
+        case PlotMode::None:
             break;
     }
 }
