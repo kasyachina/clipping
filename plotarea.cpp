@@ -147,13 +147,14 @@ void PlotArea::drawArrows(QPainter& p)
 void PlotArea::drawClippingWindow(QPainter& p)
 {
     p.setPen(clippingWindowColor);
+    p.setBrush(Qt::NoBrush);
     p.drawRect(QRect{Adjust(clippingWindowp1), Adjust(clippingWindowp2)});
 }
 void PlotArea::drawLineSegments(QPainter& p)
 {
     if (segments.empty())
     {
-        QMessageBox::warning(this, "Ошибка", "Нет ни одного отрезка");
+        QMessageBox::warning(nullptr, "Ошибка", "Нет ни одного отрезка");
         return;
     }
     for (const auto& segmentData : segments)
@@ -166,10 +167,11 @@ void PlotArea::drawPolygon(QPainter& p)
 {
     if (polygonData.empty())
     {
-        QMessageBox::warning(this, "Ошибка", "Многоугольник пуст");
+        QMessageBox::warning(nullptr, "Ошибка", "Многоугольник пуст");
+        return;
     }
     p.setPen(QPen(polygonBorderColor, line_width));
-    p.setBrush(polygonFillingColor);
+    p.setBrush(Qt::NoBrush);
     QPainterPath path;
     path.moveTo(Adjust(polygonData[0]));
     for (size_t i = 1; i < polygonData.size(); ++i)
@@ -208,7 +210,6 @@ void PlotArea::Clear()
 {
     segments.clear();
     polygonData.clear();
-    repaint();
 }
 void PlotArea::paintEvent(QPaintEvent*)
 {

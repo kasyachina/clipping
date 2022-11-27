@@ -16,11 +16,16 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_segments_clicked();
+
+    void on_poly_clicked();
+
 private:
     Ui::MainWindow *ui;
     PlotArea *area;
     QString segmentsPath = "/home/kasinski_nikita/Documents/segments.txt";
-    QString polygonPath = "/home/kasinski_nikita/Documents/poly.txt";
+    QString polygonPath = "/home/kasinski_nikita/Documents/polygon.txt";
     void ReadSegments();
     void ReadPoly();
 };
