@@ -8,16 +8,16 @@
 class LineSegmentData
 {
 public:
-    explicit LineSegmentData(const QPoint& p1, const QPoint& p2, const QColor& color);
-    int x1() const;
-    int x2() const;
-    int y1() const;
-    int y2() const;
-    QPoint p1() const;
-    QPoint p2() const;
+    explicit LineSegmentData(const QPointF& p1, const QPointF& p2, const QColor& color);
+    qreal x1() const;
+    qreal x2() const;
+    qreal y1() const;
+    qreal y2() const;
+    QPointF p1() const;
+    QPointF p2() const;
     QColor color() const;
 private:
-    QPoint _p1, _p2;
+    QPointF _p1, _p2;
     QColor _color;
 };
 
@@ -34,7 +34,7 @@ class PlotArea : public QWidget
 public:
     explicit PlotArea(QWidget *parent = nullptr, PlotMode mode = PlotMode::None);
     void AddLineSegment(const LineSegmentData& data);
-    QPoint Adjust(const QPoint& p);
+    QPointF Adjust(const QPointF& p);
     void AddPolygonPoint(int x, int y);
     void SetPolygonFillingColor(const QColor& color);
     void SetPolygonBorderColor(const QColor& color);
@@ -53,12 +53,12 @@ private:
     int box_offset = 1;
     int box_width = 1;
     int pixel_width = 1;
-    int line_width = 2;
+    int line_width = 3;
     int zx = 0;
     int zy = 0;
     PlotMode mode = PlotMode::None;
     std::vector<LineSegmentData> segments;
-    std::vector<QPoint> polygonData;
+    std::vector<QPointF> polygonData;
     QColor polygonFillingColor = Qt::white;
     QColor polygonBorderColor = Qt::blue;
     QColor clippingWindowColor = Qt::red;

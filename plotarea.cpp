@@ -3,37 +3,37 @@
 #include <QPainterPath>
 #include <QMessageBox>
 
-LineSegmentData::LineSegmentData(const QPoint& p1, const QPoint& p2, const QColor& color)
+LineSegmentData::LineSegmentData(const QPointF& p1, const QPointF& p2, const QColor& color)
 {
     _p1 = p1;
     _p2 = p2;
     _color = color;
 }
 
-int LineSegmentData::x1() const
+qreal LineSegmentData::x1() const
 {
     return _p1.x();
 }
 
-int LineSegmentData::x2() const
+qreal LineSegmentData::x2() const
 {
     return _p2.x();
 }
 
-int LineSegmentData::y1() const
+qreal LineSegmentData::y1() const
 {
     return _p1.y();
 }
 
-int LineSegmentData::y2() const
+qreal LineSegmentData::y2() const
 {
     return _p2.y();
 }
-QPoint LineSegmentData::p1() const
+QPointF LineSegmentData::p1() const
 {
     return _p1;
 }
-QPoint LineSegmentData::p2() const
+QPointF LineSegmentData::p2() const
 {
     return _p2;
 }
@@ -46,9 +46,9 @@ PlotArea::PlotArea(QWidget *parent, PlotMode _mode):QWidget(parent)
     u = std::min(width(), height()) / 20;
     mode = _mode;
 }
-QPoint PlotArea::Adjust(const QPoint& p)
+QPointF PlotArea::Adjust(const QPointF& p)
 {
-    return QPoint(zx + p.x() * u, zy - p.y() * u);
+    return QPointF(zx + p.x() * u, zy - p.y() * u);
 }
 void PlotArea::drawBox(QPainter& p)
 {
@@ -146,9 +146,9 @@ void PlotArea::drawArrows(QPainter& p)
 }
 void PlotArea::drawClippingWindow(QPainter& p)
 {
-    p.setPen(clippingWindowColor);
+    p.setPen(QPen(clippingWindowColor, line_width));
     p.setBrush(Qt::NoBrush);
-    p.drawRect(QRect{Adjust(clippingWindowp1), Adjust(clippingWindowp2)});
+    p.drawRect(QRectF{Adjust(clippingWindowp1), Adjust(clippingWindowp2)});
 }
 void PlotArea::drawLineSegments(QPainter& p)
 {
@@ -187,7 +187,7 @@ void PlotArea::AddLineSegment(const LineSegmentData& data)
 }
 void PlotArea::AddPolygonPoint(int x, int y)
 {
-    polygonData.push_back({x, y});
+    polygonData.push_back(QPointF(x, y));
 }
 void PlotArea::SetPolygonBorderColor(const QColor& color)
 {
@@ -232,12 +232,12 @@ void PlotArea::paintEvent(QPaintEvent*)
     switch(mode)
     {
         case PlotMode::Segments:
-            drawLineSegments(pt);
             drawClippingWindow(pt);
+            drawLineSegments(pt);
             break;
         case PlotMode::Polygons:
-            drawPolygon(pt);
             drawClippingWindow(pt);
+            drawPolygon(pt);
             break;
         case PlotMode::None:
             break;
