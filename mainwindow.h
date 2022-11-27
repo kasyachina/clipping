@@ -28,6 +28,6 @@ private:
     QString polygonPath = "/home/kasinski_nikita/Documents/polygon.txt";
     void ProcessSegments();
     void ProcessPoly();
-    int getCode(int x, int y) const;
+    int getCode(qreal x, qreal y) const;
 };
 #endif // MAINWINDOW_H
