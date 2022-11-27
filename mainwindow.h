@@ -28,6 +28,8 @@ private:
     QString polygonPath = "/home/kasinski_nikita/Documents/polygon.txt";
     void ProcessSegments();
     void ProcessPoly();
+    void ClipAfterLine(std::vector<QPointF>& polygon, int cord, int bit);
     int getCode(qreal x, qreal y) const;
+    int getCode(const QPointF& p) const;
 };
 #endif // MAINWINDOW_H

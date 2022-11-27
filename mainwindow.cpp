@@ -45,6 +45,12 @@ int MainWindow::getCode(qreal x, qreal y) const
     }
     return ans;
 }
+
+int MainWindow::getCode(const QPointF& p) const
+{
+    return getCode(p.x(), p.y());
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -91,13 +97,13 @@ void MainWindow::ProcessSegments()
         }
         else
         {
-            int A = y2 - y1;
-            int B = x1 - x2;
-            int C = -A * x1 - B * y1;
-            int xmin = area -> getClippingWindowP1().x();
-            int ymax = area -> getClippingWindowP1().y();
-            int xmax = area -> getClippingWindowP2().x();
-            int ymin = area -> getClippingWindowP2().y();
+            qreal A = y2 - y1;
+            qreal B = x1 - x2;
+            qreal C = -A * x1 - B * y1;
+            qreal xmin = area -> getClippingWindowP1().x();
+            qreal ymax = area -> getClippingWindowP1().y();
+            qreal xmax = area -> getClippingWindowP2().x();
+            qreal ymin = area -> getClippingWindowP2().y();
             while(code1 != 0 || code2 != 0)
             {
                 if (code1 == 0)
@@ -109,7 +115,7 @@ void MainWindow::ProcessSegments()
                 if (code1 & 1)
                 {
                     //leftside xmin
-                    qreal y = (-C - A * xmin) / (qreal)B;
+                    qreal y = (-C - A * xmin) / B;
                     area -> AddLineSegment(LineSegmentData{QPointF(x1, y1), QPointF(xmin, y), Qt::red});
                     x1 = xmin;
                     y1 = y;
@@ -117,7 +123,7 @@ void MainWindow::ProcessSegments()
                 else if (code1 & 2)
                 {
                     //rightside xmax
-                    qreal y = (-C - A * xmax) / (qreal)B;
+                    qreal y = (-C - A * xmax) / B;
                     area -> AddLineSegment(LineSegmentData{QPointF(x1, y1), QPointF(xmax, y), Qt::red});
                     x1 = xmax;
                     y1 = y;
@@ -126,7 +132,7 @@ void MainWindow::ProcessSegments()
                 else if (code1 & 4)
                 {
                     //bottomside ymin
-                    qreal x = (-C - B * ymin) / (qreal)A;
+                    qreal x = (-C - B * ymin) / A;
                     area -> AddLineSegment(LineSegmentData{QPointF(x1, y1), QPointF(x, ymin), Qt::red});
                     x1 = x;
                     y1 = ymin;
@@ -134,7 +140,7 @@ void MainWindow::ProcessSegments()
                 else
                 {
                     //topside ymax
-                    qreal x = (-C - B * ymax) / (qreal)A;
+                    qreal x = (-C - B * ymax) / A;
                     area -> AddLineSegment(LineSegmentData{QPointF(x1, y1), QPointF(x, ymax), Qt::red});
                     x1 = x;
                     y1 = ymax;
@@ -166,7 +172,75 @@ void MainWindow::ProcessPoly()
     fin >> x1 >> y1 >> x2 >> y2;
     area -> AddPolygon(points, Qt::gray);
     area -> SetClippingWindow({x1, y1}, {x2, y2});
+    qreal xmin = area -> getClippingWindowP1().x();
+    qreal ymax = area -> getClippingWindowP1().y();
+    qreal xmax = area -> getClippingWindowP2().x();
+    qreal ymin = area -> getClippingWindowP2().y();
+    ClipAfterLine(points, ymin, 2);
+    ClipAfterLine(points, ymax, 3);
+    ClipAfterLine(points, xmin, 0);
+    ClipAfterLine(points, xmax, 1);
+    area -> AddPolygon(points, Qt::blue);
+
     fin.close();
+}
+void MainWindow::ClipAfterLine(std::vector<QPointF>& points, int coord, int bit)
+{
+    auto f = [&bit](int code)
+    {
+        return (code & (1 << bit)) == 0;
+    };
+    auto intersect = [coord, bit](const QPointF& p1, const QPointF& p2)
+    {
+        qreal x1 = p1.x();
+        qreal y1 = p1.y();
+        qreal x2 = p2.x();
+        qreal y2 = p2.y();
+        qreal A = y2 - y1;
+        qreal B = x1 - x2;
+        qreal C = -A * x1 - B * y1;
+        if (bit < 2)
+        {
+            //intersect with x = coord
+
+
+            qreal y = (-C - A * coord) / B;
+            return QPointF(coord, y);
+        }
+        else
+        {
+            qreal x = (-C - B * coord) / A;
+            return QPointF(x, coord);
+        }
+    };
+    size_t i = 1;
+    std::vector<QPointF> ans;
+    QPointF lastPoint = points[0];
+    int lastCode = getCode(lastPoint);
+    while(i <= points.size())
+    {
+        int newCode = getCode(points[i % points.size()]);
+        if (f(lastCode) && f(newCode))
+        {
+            ans.push_back(lastPoint);
+            //++i;
+        }
+        else if (f(lastCode) && !f(newCode))
+        {
+            ans.push_back(lastPoint);
+            ans.push_back(intersect(lastPoint, points[i % points.size()]));
+            //++i;
+        }
+        else if (!f(lastCode) && f(newCode))
+        {
+            ans.push_back(intersect(lastPoint, points[i % points.size()]));
+            //++i;
+        }
+        lastCode = newCode;
+        lastPoint = points[i];
+        ++i;
+    }
+    points.swap(ans);
 }
 void MainWindow::on_segments_clicked()
 {
