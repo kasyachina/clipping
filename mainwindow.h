@@ -28,5 +28,6 @@ private:
     QString polygonPath = "/home/kasinski_nikita/Documents/polygon.txt";
     void ReadSegments();
     void ReadPoly();
+    int getCode(const QPoint& p) const;
 };
 #endif // MAINWINDOW_H
