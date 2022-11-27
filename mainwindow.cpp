@@ -12,10 +12,23 @@ MainWindow::MainWindow(QWidget *parent)
     setStyleSheet("background-color: white;");
     QGridLayout *g = new QGridLayout(centralWidget());
     area = new PlotArea();
-    g -> addWidget(area, 0, 0, 4, 4);
+    g -> addWidget(area, 0, 0, 10, 4);
+    g -> addWidget(ui -> clippingText,  0, 4, 1, 1);
+    g -> addWidget(ui -> segments,      1, 4, 1, 1);
+    g -> addWidget(ui -> poly,          2, 4, 1, 1);
     centralWidget()->setLayout(g);
-    QString filepath = "/home/kasinski_nikita/Documents/input.txt";
-    std::ifstream fin(filepath.toStdString());
+    setMinimumSize({600, 600});
+    setWindowTitle("Отсечения");
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::ReadSegments()
+{
+    std::ifstream fin(segmentsPath.toStdString());
     int n;
     fin >> n;
     int x1, x2, y1, y2;
@@ -24,13 +37,33 @@ MainWindow::MainWindow(QWidget *parent)
         fin >> x1 >> y1 >> x2 >> y2;
         area->AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::blue});
     }
-    area->repaint();
-    setMinimumSize({600, 600});
-    setWindowTitle("Отсечения");
+}
+void MainWindow::ReadPoly()
+{
+    std::ifstream fin(polygonPath.toStdString());
+    int n;
+    fin >> n;
+    int x1, y1;
+    for (int i = 0; i < n; ++i)
+    {
+        fin >> x1 >> y1;
+        area ->
+    }
+}
+void MainWindow::on_segments_clicked()
+{
+    area -> Clear();
+    area -> ChangeMode(PlotMode::Segments);
+    ReadSegments();
+    area -> repaint();
 }
 
-MainWindow::~MainWindow()
+
+void MainWindow::on_poly_clicked()
 {
-    delete ui;
+    area -> Clear();
+    area -> ChangeMode(PlotMode::Polygons);
+    ReadPoly();
+    area -> repaint();
 }
 

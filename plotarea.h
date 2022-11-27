@@ -23,6 +23,7 @@ private:
 
 enum class PlotMode
 {
+    None,
     Segments,
     Polygons,
 };
@@ -31,12 +32,13 @@ class PlotArea : public QWidget
 {
     Q_OBJECT
 public:
-    explicit PlotArea(QWidget *parent = nullptr, PlotMode mode = PlotMode::Segments);
+    explicit PlotArea(QWidget *parent = nullptr, PlotMode mode = PlotMode::None);
     void AddLineSegment(const LineSegmentData& data);
     QPoint Adjust(const QPoint& p);
     void AddPolygonPoint(int x, int y);
     void SetPolygonFillingColor(const QColor& color);
     void SetPolygonBorderColor(const QColor& color);
+    void SetClippingWindow(const QPoint& p1, const QPoint& p2);
     void ChangeMode(PlotMode newMode);
     void Clear();
     void SetUnit(int nu);
@@ -52,14 +54,17 @@ private:
     int line_width = 2;
     int zx = 0;
     int zy = 0;
-    PlotMode mode = PlotMode::Segments;
+    PlotMode mode = PlotMode::None;
     std::vector<LineSegmentData> segments;
     std::vector<QPoint> polygonData;
     QColor polygonFillingColor = Qt::white;
     QColor polygonBorderColor = Qt::black;
+    QColor clippingWindowColor = Qt::red;
     QColor axisColor = Qt::black;
     QColor gridColor = Qt::gray;
     QColor boxColor = Qt::gray;
+    QPoint clippingWindowp1;
+    QPoint clippingWindowp2;
     void inline drawBox(QPainter(&p));
     void inline drawGrid(QPainter& p);
     void inline drawAxis(QPainter& p);
@@ -67,6 +72,7 @@ private:
     void inline drawArrows(QPainter& p);
     void inline drawLineSegments(QPainter& p);
     void inline drawPolygon(QPainter& p);
+    void inline drawClippingWindow(QPainter& p);
     void paintEvent(QPaintEvent* event) override;
 };
 
