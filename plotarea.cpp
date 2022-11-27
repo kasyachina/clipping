@@ -3,9 +3,43 @@
 #include <QPainterPath>
 #include <QMessageBox>
 
-PlotArea::PlotArea(QWidget *parent):QWidget(parent)
+LineSegmentData::LineSegmentData(int x1, int x2, int y1, int y2, const QColor& color)
+{
+    _x1 = x1;
+    _x2 = x2;
+    _y1 = y1;
+    _y2 = y2;
+    _color = color;
+}
+
+int LineSegmentData::x1() const
+{
+    return _x1;
+}
+
+int LineSegmentData::x2() const
+{
+    return _x2;
+}
+
+int LineSegmentData::y1() const
+{
+    return _y1;
+}
+
+int LineSegmentData::y2() const
+{
+    return _y2;
+}
+
+QColor LineSegmentData::color() const
+{
+    return _color;
+}
+PlotArea::PlotArea(QWidget *parent, PlotMode _mode):QWidget(parent)
 {
     u = std::min(width(), height()) / 20;
+    mode = _mode;
 }
 
 void PlotArea::drawBox(QPainter& p)
@@ -102,13 +136,60 @@ void PlotArea::drawArrows(QPainter& p)
     p.drawPath(py);
     p.drawText(QRect{zx + u / 2, u / 2, u, u}, "Y");
 }
+void PlotArea::drawLineSegments(QPainter& p)
+{
+    if (segments.empty())
+    {
+        QMessageBox::warning(this, "Ошибка", "Нет ни одного отрезка");
+        return;
+    }
+    for (const auto& segmentData : segments)
+    {
+        p.setPen(segmentData.color());
+        p.drawLine(segmentData.x1(), segmentData.y1(), segmentData.x2(), segmentData.y2());
+    }
+}
+void PlotArea::drawPolygon(QPainter& p)
+{
+    if (polygonData.empty())
+    {
+        QMessageBox::warning(this, "Ошибка", "Многоугольник пуст");
+    }
+    p.setPen(polygonBorderColor);
+    p.setBrush(polygonFillingColor);
+    QPainterPath path;
+    path.moveTo(polygonData[0]);
+    for (size_t i = 1; i < polygonData.size(); ++i)
+    {
+        path.lineTo(polygonData[i]);
+    }
+    path.lineTo(polygonData[0]);
+    p.drawPath(path);
+}
+void PlotArea::AddLineSegment(const LineSegmentData& data)
+{
+    segments.push_back(data);
+}
+void PlotArea::AddPolygonPoint(int x, int y)
+{
+    polygonData.push_back({x, y});
+}
+void PlotArea::SetPolygonBorderColor(const QColor& color)
+{
+    polygonBorderColor = color;
+}
+void PlotArea::SetPolygonFillingColor(const QColor& color)
+{
+    polygonFillingColor = color;
+}
+void PlotArea::ChangeMode(PlotMode newMode)
+{
+    mode = newMode;
+}
 void PlotArea::Clear()
 {
+    segments.clear();
     repaint();
-}
-void PlotArea::SetUnit(int nu)
-{
-      u = nu;
 }
 void PlotArea::paintEvent(QPaintEvent*)
 {
@@ -120,8 +201,21 @@ void PlotArea::paintEvent(QPaintEvent*)
     drawAxis(pt);
     drawTicks(pt);
     drawArrows(pt);
+    switch(mode)
+    {
+        case PlotMode::Segments:
+            drawLineSegments(pt);
+            break;
+        case PlotMode::Polygons:
+            drawPolygon(pt);
+            break;
+    }
 }
 int PlotArea::getUnit() const
 {
     return u;
+}
+void PlotArea::SetUnit(int nu)
+{
+      u = nu;
 }
