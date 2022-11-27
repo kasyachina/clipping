@@ -26,8 +26,8 @@ private:
     PlotArea *area;
     QString segmentsPath = "/home/kasinski_nikita/Documents/segments.txt";
     QString polygonPath = "/home/kasinski_nikita/Documents/polygon.txt";
-    void ReadSegments();
-    void ReadPoly();
-    int getCode(const QPoint& p) const;
+    void ProcessSegments();
+    void ProcessPoly();
+    int getCode(int x, int y) const;
 };
 #endif // MAINWINDOW_H
