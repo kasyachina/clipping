@@ -16,6 +16,15 @@ MainWindow::MainWindow(QWidget *parent)
     centralWidget()->setLayout(g);
     QString filepath = "/home/kasinski_nikita/Documents/input.txt";
     std::ifstream fin(filepath.toStdString());
+    int n;
+    fin >> n;
+    int x1, x2, y1, y2;
+    for (int i = 0; i < n; ++i)
+    {
+        fin >> x1 >> y1 >> x2 >> y2;
+        area->AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::blue});
+    }
+    area->repaint();
     setMinimumSize({600, 600});
     setWindowTitle("Отсечения");
 }

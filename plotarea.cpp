@@ -3,35 +3,40 @@
 #include <QPainterPath>
 #include <QMessageBox>
 
-LineSegmentData::LineSegmentData(int x1, int x2, int y1, int y2, const QColor& color)
+LineSegmentData::LineSegmentData(const QPoint& p1, const QPoint& p2, const QColor& color)
 {
-    _x1 = x1;
-    _x2 = x2;
-    _y1 = y1;
-    _y2 = y2;
+    _p1 = p1;
+    _p2 = p2;
     _color = color;
 }
 
 int LineSegmentData::x1() const
 {
-    return _x1;
+    return _p1.x();
 }
 
 int LineSegmentData::x2() const
 {
-    return _x2;
+    return _p2.x();
 }
 
 int LineSegmentData::y1() const
 {
-    return _y1;
+    return _p1.y();
 }
 
 int LineSegmentData::y2() const
 {
-    return _y2;
+    return _p2.y();
 }
-
+QPoint LineSegmentData::p1() const
+{
+    return _p1;
+}
+QPoint LineSegmentData::p2() const
+{
+    return _p2;
+}
 QColor LineSegmentData::color() const
 {
     return _color;
@@ -41,7 +46,10 @@ PlotArea::PlotArea(QWidget *parent, PlotMode _mode):QWidget(parent)
     u = std::min(width(), height()) / 20;
     mode = _mode;
 }
-
+QPoint PlotArea::Adjust(const QPoint& p)
+{
+    return QPoint(zx + p.x() * u, zy - p.y() * u);
+}
 void PlotArea::drawBox(QPainter& p)
 {
     int h = height() - 2 * box_offset;
@@ -145,8 +153,8 @@ void PlotArea::drawLineSegments(QPainter& p)
     }
     for (const auto& segmentData : segments)
     {
-        p.setPen(segmentData.color());
-        p.drawLine(segmentData.x1(), segmentData.y1(), segmentData.x2(), segmentData.y2());
+        p.setPen(QPen(segmentData.color(), line_width));
+        p.drawLine(Adjust(segmentData.p1()), Adjust(segmentData.p2()));
     }
 }
 void PlotArea::drawPolygon(QPainter& p)
@@ -155,15 +163,15 @@ void PlotArea::drawPolygon(QPainter& p)
     {
         QMessageBox::warning(this, "Ошибка", "Многоугольник пуст");
     }
-    p.setPen(polygonBorderColor);
+    p.setPen(QPen(polygonBorderColor, line_width));
     p.setBrush(polygonFillingColor);
     QPainterPath path;
-    path.moveTo(polygonData[0]);
+    path.moveTo(Adjust(polygonData[0]));
     for (size_t i = 1; i < polygonData.size(); ++i)
     {
-        path.lineTo(polygonData[i]);
+        path.lineTo(Adjust(polygonData[i]));
     }
-    path.lineTo(polygonData[0]);
+    path.lineTo(Adjust(polygonData[0]));
     p.drawPath(path);
 }
 void PlotArea::AddLineSegment(const LineSegmentData& data)
@@ -189,6 +197,7 @@ void PlotArea::ChangeMode(PlotMode newMode)
 void PlotArea::Clear()
 {
     segments.clear();
+    polygonData.clear();
     repaint();
 }
 void PlotArea::paintEvent(QPaintEvent*)
