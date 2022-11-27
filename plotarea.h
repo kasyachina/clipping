@@ -58,7 +58,7 @@ private:
     std::vector<LineSegmentData> segments;
     std::vector<QPoint> polygonData;
     QColor polygonFillingColor = Qt::white;
-    QColor polygonBorderColor = Qt::black;
+    QColor polygonBorderColor = Qt::blue;
     QColor clippingWindowColor = Qt::red;
     QColor axisColor = Qt::black;
     QColor gridColor = Qt::gray;

@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QGridLayout>
 #include <fstream>
-#include <iostream>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -29,6 +29,11 @@ MainWindow::~MainWindow()
 void MainWindow::ReadSegments()
 {
     std::ifstream fin(segmentsPath.toStdString());
+    if (!fin)
+    {
+        QMessageBox::warning(nullptr, "Ошибка", "Файл segments.txt в папке исполняемого файла не найден");
+        return;
+    }
     int n;
     fin >> n;
     int x1, x2, y1, y2;
@@ -37,18 +42,30 @@ void MainWindow::ReadSegments()
         fin >> x1 >> y1 >> x2 >> y2;
         area->AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::blue});
     }
+    fin >> x1 >> y1 >> x2 >> y2;
+    area -> SetClippingWindow({x1, y1}, {x2, y2});
+    fin.close();
 }
 void MainWindow::ReadPoly()
 {
     std::ifstream fin(polygonPath.toStdString());
+    if (!fin)
+    {
+        QMessageBox::warning(nullptr, "Ошибка", "Файл polygon.txt в папке исполняемого файла не найден");
+        return;
+    }
     int n;
     fin >> n;
     int x1, y1;
     for (int i = 0; i < n; ++i)
     {
         fin >> x1 >> y1;
-        area ->
+        area -> AddPolygonPoint(x1, y1);
     }
+    int x2, y2;
+    fin >> x1 >> y1 >> x2 >> y2;
+    area -> SetClippingWindow({x1, y1}, {x2, y2});
+    fin.close();
 }
 void MainWindow::on_segments_clicked()
 {
