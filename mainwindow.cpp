@@ -3,6 +3,7 @@
 #include <QGridLayout>
 #include <fstream>
 #include <QMessageBox>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,26 +22,24 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Отсечения");
 }
 
-int MainWindow::getCode(const QPoint& p) const
+int MainWindow::getCode(int x, int y) const
 {
     int ans = 0;
-    int x = p.x();
-    int y = p.y();
     QPoint p1 = area -> getClippingWindowP1();
     QPoint p2 = area -> getClippingWindowP2();
-    if (y > p1.y())
+    if (y >= p1.y())
     {
         ans |= 1;
     }
-    if (y < p2.y())
+    if (y <= p2.y())
     {
         ans |= 2;
     }
-    if (x > p2.x())
+    if (x >= p2.x())
     {
         ans |= 4;
     }
-    if (x < p1.x())
+    if (x <= p1.x())
     {
         ans |= 8;
     }
@@ -51,7 +50,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::ReadSegments()
+void MainWindow::ProcessSegments()
 {
     std::ifstream fin(segmentsPath.toStdString());
     if (!fin)
@@ -62,16 +61,45 @@ void MainWindow::ReadSegments()
     int n;
     fin >> n;
     int x1, x2, y1, y2;
+    std::vector<std::pair<QPoint, QPoint>> data;
     for (int i = 0; i < n; ++i)
     {
         fin >> x1 >> y1 >> x2 >> y2;
-        area->AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::blue});
+        data.push_back({QPoint(x1, y1), QPoint(x2, y2)});
     }
     fin >> x1 >> y1 >> x2 >> y2;
     area -> SetClippingWindow({x1, y1}, {x2, y2});
     fin.close();
+
+    for (int i = 0; i < n; ++i)
+    {
+        int x1 = data[i].first.x();
+        int y1 = data[i].first.y();
+        int x2 = data[i].second.x();
+        int y2 = data[i].second.y();
+        int code1 = getCode(x1, y1);
+        int code2 = getCode(x2, y2);
+        if (code1 == 0 && code2 == 0)
+        {
+            //inside
+            area -> AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::blue});
+        }
+        else if ((code1 & code2) != 0)
+        {
+            //outside
+            area -> AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::red});
+        }
+        else if ((code1 == 0 && code2 != 0) || (code2 == 0 && code1 != 0))
+        {
+            area -> AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::magenta});
+        }
+        else
+        {
+            area -> AddLineSegment(LineSegmentData{QPoint(x1, y1), QPoint(x2, y2), Qt::magenta});
+        }
+    }
 }
-void MainWindow::ReadPoly()
+void MainWindow::ProcessPoly()
 {
     std::ifstream fin(polygonPath.toStdString());
     if (!fin)
@@ -96,7 +124,7 @@ void MainWindow::on_segments_clicked()
 {
     area -> Clear();
     area -> ChangeMode(PlotMode::Segments);
-    ReadSegments();
+    ProcessSegments();
     area -> repaint();
 }
 
@@ -105,7 +133,7 @@ void MainWindow::on_poly_clicked()
 {
     area -> Clear();
     area -> ChangeMode(PlotMode::Polygons);
-    ReadPoly();
+    ProcessPoly();
     area -> repaint();
 }
 
