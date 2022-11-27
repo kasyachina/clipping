@@ -156,13 +156,15 @@ void MainWindow::ProcessPoly()
     int n;
     fin >> n;
     int x1, y1;
+    std::vector<QPointF> points;
     for (int i = 0; i < n; ++i)
     {
         fin >> x1 >> y1;
-        area -> AddPolygonPoint(x1, y1);
+        points.push_back(QPointF(x1, y1));
     }
     int x2, y2;
     fin >> x1 >> y1 >> x2 >> y2;
+    area -> AddPolygon(points, Qt::gray);
     area -> SetClippingWindow({x1, y1}, {x2, y2});
     fin.close();
 }

@@ -21,6 +21,17 @@ private:
     QColor _color;
 };
 
+class PolygonData
+{
+public:
+    explicit PolygonData(const std::vector<QPointF>& points, const QColor& fillingColor);
+    std::vector<QPointF> getPoints() const;
+    QColor getColor() const;
+private:
+    std::vector<QPointF> _points;
+    QColor _color;
+};
+
 enum class PlotMode
 {
     None,
@@ -35,8 +46,7 @@ public:
     explicit PlotArea(QWidget *parent = nullptr, PlotMode mode = PlotMode::None);
     void AddLineSegment(const LineSegmentData& data);
     QPointF Adjust(const QPointF& p);
-    void AddPolygonPoint(int x, int y);
-    void SetPolygonFillingColor(const QColor& color);
+    void AddPolygon(const std::vector<QPointF>& points, const QColor& fillingColor);
     void SetPolygonBorderColor(const QColor& color);
     void SetClippingWindow(const QPoint& p1, const QPoint& p2);
     void ChangeMode(PlotMode newMode);
@@ -58,10 +68,9 @@ private:
     int zy = 0;
     PlotMode mode = PlotMode::None;
     std::vector<LineSegmentData> segments;
-    std::vector<QPointF> polygonData;
-    QColor polygonFillingColor = Qt::white;
-    QColor polygonBorderColor = Qt::blue;
-    QColor clippingWindowColor = Qt::red;
+    std::vector<PolygonData> polygons;
+    QColor polygonBorderColor = Qt::black;
+    QColor clippingWindowColor = Qt::magenta;
     QColor axisColor = Qt::black;
     QColor gridColor = Qt::gray;
     QColor boxColor = Qt::gray;
@@ -73,7 +82,7 @@ private:
     void inline drawTicks(QPainter& p);
     void inline drawArrows(QPainter& p);
     void inline drawLineSegments(QPainter& p);
-    void inline drawPolygon(QPainter& p);
+    void inline drawPolygons(QPainter& p);
     void inline drawClippingWindow(QPainter& p);
     void paintEvent(QPaintEvent* event) override;
 };

@@ -41,6 +41,20 @@ QColor LineSegmentData::color() const
 {
     return _color;
 }
+
+PolygonData::PolygonData(const std::vector<QPointF>& points, const QColor& color)
+{
+    _points = points;
+    _color = color;
+}
+QColor PolygonData::getColor() const
+{
+    return _color;
+}
+std::vector<QPointF> PolygonData::getPoints() const
+{
+    return _points;
+}
 PlotArea::PlotArea(QWidget *parent, PlotMode _mode):QWidget(parent)
 {
     u = std::min(width(), height()) / 20;
@@ -163,39 +177,44 @@ void PlotArea::drawLineSegments(QPainter& p)
         p.drawLine(Adjust(segmentData.p1()), Adjust(segmentData.p2()));
     }
 }
-void PlotArea::drawPolygon(QPainter& p)
+void PlotArea::drawPolygons(QPainter& p)
 {
-    if (polygonData.empty())
+    if (polygons.empty())
     {
-        QMessageBox::warning(nullptr, "Ошибка", "Многоугольник пуст");
+        QMessageBox::warning(nullptr, "Ошибка", "Нет многоугольников");
         return;
     }
     p.setPen(QPen(polygonBorderColor, line_width));
-    p.setBrush(Qt::NoBrush);
-    QPainterPath path;
-    path.moveTo(Adjust(polygonData[0]));
-    for (size_t i = 1; i < polygonData.size(); ++i)
+    for (const auto& polygon : polygons)
     {
-        path.lineTo(Adjust(polygonData[i]));
+        std::vector<QPointF> polygonData = polygon.getPoints();
+        p.setBrush(polygon.getColor());
+        if (polygonData.empty())
+        {
+            QMessageBox::warning(nullptr, "Ошибка", "Нет многоугольников");
+            return;
+        }
+        QPainterPath path;
+        path.moveTo(Adjust(polygonData[0]));
+        for (size_t i = 1; i < polygonData.size(); ++i)
+        {
+            path.lineTo(Adjust(polygonData[i]));
+        }
+        path.lineTo(Adjust(polygonData[0]));
+        p.drawPath(path);
     }
-    path.lineTo(Adjust(polygonData[0]));
-    p.drawPath(path);
 }
 void PlotArea::AddLineSegment(const LineSegmentData& data)
 {
     segments.push_back(data);
 }
-void PlotArea::AddPolygonPoint(int x, int y)
+void PlotArea::AddPolygon(const std::vector<QPointF>& points, const QColor& fillingColor)
 {
-    polygonData.push_back(QPointF(x, y));
+    polygons.push_back(PolygonData(points, fillingColor));
 }
 void PlotArea::SetPolygonBorderColor(const QColor& color)
 {
     polygonBorderColor = color;
-}
-void PlotArea::SetPolygonFillingColor(const QColor& color)
-{
-    polygonFillingColor = color;
 }
 void PlotArea::SetClippingWindow(const QPoint& p1, const QPoint& p2)
 {
@@ -217,7 +236,7 @@ void PlotArea::ChangeMode(PlotMode newMode)
 void PlotArea::Clear()
 {
     segments.clear();
-    polygonData.clear();
+    polygons.clear();
 }
 void PlotArea::paintEvent(QPaintEvent*)
 {
@@ -225,10 +244,10 @@ void PlotArea::paintEvent(QPaintEvent*)
     zy = height() / 2;
     QPainter pt(this);
     drawBox(pt);
-    drawGrid(pt);
     drawAxis(pt);
     drawTicks(pt);
     drawArrows(pt);
+    drawGrid(pt);
     switch(mode)
     {
         case PlotMode::Segments:
@@ -236,8 +255,8 @@ void PlotArea::paintEvent(QPaintEvent*)
             drawLineSegments(pt);
             break;
         case PlotMode::Polygons:
+            drawPolygons(pt);
             drawClippingWindow(pt);
-            drawPolygon(pt);
             break;
         case PlotMode::None:
             break;
