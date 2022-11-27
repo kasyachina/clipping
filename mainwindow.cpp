@@ -21,6 +21,31 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Отсечения");
 }
 
+int MainWindow::getCode(const QPoint& p) const
+{
+    int ans = 0;
+    int x = p.x();
+    int y = p.y();
+    QPoint p1 = area -> getClippingWindowP1();
+    QPoint p2 = area -> getClippingWindowP2();
+    if (y > p1.y())
+    {
+        ans |= 1;
+    }
+    if (y < p2.y())
+    {
+        ans |= 2;
+    }
+    if (x > p2.x())
+    {
+        ans |= 4;
+    }
+    if (x < p1.x())
+    {
+        ans |= 8;
+    }
+    return ans;
+}
 MainWindow::~MainWindow()
 {
     delete ui;

@@ -43,6 +43,8 @@ public:
     void Clear();
     void SetUnit(int nu);
     int getUnit() const;
+    QPoint getClippingWindowP1() const;
+    QPoint getClippingWindowP2() const;
 private:
     int u; // unit size
     int tick_length = 4;

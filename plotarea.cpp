@@ -199,8 +199,16 @@ void PlotArea::SetPolygonFillingColor(const QColor& color)
 }
 void PlotArea::SetClippingWindow(const QPoint& p1, const QPoint& p2)
 {
-    clippingWindowp1 = p1;
-    clippingWindowp2 = p2;
+    clippingWindowp1 = QPoint(std::min(p1.x(), p2.x()), std::max(p1.y(), p2.y()));
+    clippingWindowp2 = QPoint(std::max(p1.x(), p2.x()), std::min(p1.y(), p2.y()));
+}
+QPoint PlotArea::getClippingWindowP1() const
+{
+    return clippingWindowp1;
+}
+QPoint PlotArea::getClippingWindowP2() const
+{
+    return clippingWindowp2;
 }
 void PlotArea::ChangeMode(PlotMode newMode)
 {
