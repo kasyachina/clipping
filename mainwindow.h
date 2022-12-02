@@ -24,8 +24,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     PlotArea *area;
-    QString segmentsPath = "/home/kasinski_nikita/Documents/segments.txt";
-    QString polygonPath = "/home/kasinski_nikita/Documents/polygon.txt";
+    QString segmentsPath = "segments.txt";
+    QString polygonPath = "polygon.txt";
     void ProcessSegments();
     void ProcessPoly();
     void ClipAfterLine(std::vector<QPointF>& polygon, int cord, int bit);
